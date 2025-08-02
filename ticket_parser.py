@@ -1,9 +1,11 @@
 import csv
 from collections import defaultdict
+import statistics
 
 category_counts = defaultdict(int)
 tag_counts = defaultdict(int) #tag counts
 resolution_counts = defaultdict(int)
+resolution_data = []
 
 # Classify ticket resolution speed
 def classify_resolution_speed(hours):
@@ -23,11 +25,33 @@ def learn_complexity_from_data(resolution_data):
     #collect resolution times from each tag
     for row in resolution_data:
         if row['Tags'] and row['Resolution Time (hours)']:
-            hours = float(row['Resolution Time (hours)'])
-            individual_tags = [tag.strip() for tag in row['Tags'].split(',')]
-            for tag in individual_tags:
-                if tag:
-                    tag_resolution_times[tag].append(hours)
+            try:
+                hours = float(row['Resolution Time (hours)'])
+                individual_tags = [tag.strip() for tag in row['Tags'].split(',')]
+                for tag in individual_tags:
+                    if tag:
+                        tag_resolution_times[tag].append(hours)
+            except ValueError:
+                continue
+
+    #calculate the overall average resolution time
+    all_times = []
+    for row in resolution_data:
+        if row['Resolution Time (hours)']:
+            try:
+                all_times.append(float(row['Resolution Time (hours)']))
+            except ValueError:
+                continue
+
+    if not all_times:
+        print("❌ No resolution data found!")
+        return {}
+
+    overall_average = statistics.mean(all_times)
+    print(f"Overall average resolution time: {overall_average:.1f} hours")
+
+    #Calculate complexity scores based on how much longer than average each tag takes
+    learn_complexity = {}
 
 with open('C:/Users/Ddr3/Documents/CyberSecurity/help desk ticket parser and reporter/intercom_report_csv.csv',
           'r') as file:
