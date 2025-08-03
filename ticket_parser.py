@@ -53,10 +53,21 @@ def learn_complexity_from_data(resolution_data):
     #Calculate complexity scores based on how much longer than average each tag takes
     learn_complexity = {}
 
+    for tag, times in tag_resolution_times.items():
+        if len(times) >= 1:
+            tag_average = statistics.mean(times)
+            #calculate complexity: if a tag takes 2x the average, it gets score -10
+            complexity_score = (tag_average / overall_average) * 5
+            learn_complexity[tag] = {
+                'score': complexity_score,
+                'avg_time': tag_average,
+                'ticket_count': len(times),
+            }
+    return learn_complexity
+
 with open('C:/Users/Ddr3/Documents/CyberSecurity/help desk ticket parser and reporter/intercom_report_csv.csv',
           'r') as file:
     read = csv.DictReader(file)
-
 
     for row in read:
         category = row['Status']
