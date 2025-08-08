@@ -208,9 +208,7 @@ def generate_recommendations(learned_complexity, predictions):
             print(f"• {tag}: {data['ticket_count']} tickets, {data['avg_time']:.1f}h avg")
 
 
-# ==================================================
-# STEP 3: MAIN EXECUTION FUNCTION
-# ==================================================
+# MAIN EXECUTION FUNCTION
 
 def main():
     """
