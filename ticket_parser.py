@@ -283,10 +283,7 @@ def main():
     print(f"\n✨ Analysis complete! The AI has learned from {len(resolution_data)} tickets.")
 
 
-# ==================================================
-# STEP 4: RUN THE PROGRAM
-# ==================================================
-
+#RUN THE PROGRAM
 if __name__ == "__main__":
     main()
 
