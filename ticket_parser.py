@@ -5,6 +5,7 @@ import argparse
 from pathlib import Path
 from typing import List, Dict
 
+
 # ==================================================
 # STEP 1: DATA LEARNING FUNCTIONS
 # ==================================================
@@ -112,13 +113,19 @@ def classify_by_complexity(score):
         return "Complex"
 
 
-def generate_learned_insights(learned_complexity, resolution_data):
-    """Generate insights based on what we learned from the data"""
+def generate_learned_insights(learned_complexity):
+    """
+    Generate insights based on what we learned from the data
+    """
+    output = []
+    output.append("\n🔍 WHAT THE AI LEARNED FROM YOUR DATA:")
     print("\n🔍 WHAT THE AI LEARNED FROM YOUR DATA:")
 
     if not learned_complexity:
-        print("❌ Not enough data to generate insights")
-        return
+        message = "❌ Not enough data to generate insights"
+        print(message)
+        output.append(message)
+        return '\n'.join(output)
 
     # Find the most and least complex tags
     sorted_by_complexity = sorted(learned_complexity.items(),
@@ -126,12 +133,18 @@ def generate_learned_insights(learned_complexity, resolution_data):
                                   reverse=True)
 
     print(f"\n📈 MOST COMPLEX ISSUES (take longest to resolve):")
+    output.append(f"\n📈 MOST COMPLEX ISSUES (take longest to resolve):")
     for tag, data in sorted_by_complexity[:5]:  # Top 5 most complex
-        print(f"• {tag}: {data['avg_time']:.1f}h average ({data['ticket_count']} tickets)")
+        message = f"• {tag}: {data['avg_time']:.1f}h average ({data['ticket_count']} tickets)"
+        print(message)
+        output.append(message)
 
     print(f"\n📉 SIMPLEST ISSUES (resolve quickly):")
+    output.append(f"\n📉 SIMPLEST ISSUES (resolve quickly):")
     for tag, data in sorted_by_complexity[-5:]:  # Bottom 5 (simplest)
-        print(f"• {tag}: {data['avg_time']:.1f}h average ({data['ticket_count']} tickets)")
+        message = f"• {tag}: {data['avg_time']:.1f}h average ({data['ticket_count']} tickets)"
+        print(message)
+        output.append(message)
 
     # Categorize all issues
     complexity_distribution = {'Simple': 0, 'Moderate': 0, 'Complex': 0}
@@ -140,15 +153,24 @@ def generate_learned_insights(learned_complexity, resolution_data):
         complexity_distribution[category] += data['ticket_count']
 
     print(f"\n📊 COMPLEXITY DISTRIBUTION:")
+    output.append(f"\n📊 COMPLEXITY DISTRIBUTION:")
     total_tickets = sum(complexity_distribution.values())
     for category, count in complexity_distribution.items():
         percentage = (count / total_tickets) * 100 if total_tickets > 0 else 0
-        print(f"• {category}: {count} tickets ({percentage:.1f}%)")
+        message = f"• {category}: {count} tickets ({percentage:.1f}%)"
+        print(message)
+        output.append(message)
+
+    return '\n'.join(output)
 
 
 def predict_open_tickets(resolution_data, learned_complexity):
     """Make predictions for tickets that are still open"""
+    output = []
     print(f"\n🔮 PREDICTIONS FOR OPEN/IN-PROGRESS TICKETS:")
+    print("=" * 50)
+    output.append(f"\n🔮 PREDICTIONS FOR OPEN/IN-PROGRESS TICKETS:")
+    output.append("=" * 50)
 
     predictions = []
     for row in resolution_data:
@@ -168,27 +190,38 @@ def predict_open_tickets(resolution_data, learned_complexity):
             predictions.append(prediction)
 
     if not predictions:
-        print("✅ No open tickets found!")
-        return predictions
+        message = "✅ No open tickets found!"
+        print(message)
+        output.append(message)
+        return '\n'.join(output)
 
     # Sort by complexity (most complex first)
     predictions.sort(key=lambda x: x['complexity_score'], reverse=True)
 
-    print(f"Found {len(predictions)} open tickets:")
-    for pred in predictions[:10]:  # Show top 10 most complex
-        print(f"• Ticket {pred['ticket_id']}: {pred['complexity_category']} "
-              f"(score: {pred['complexity_score']:.1f}) - {pred['tags']}")
+    message = f"Found {len(predictions)} open tickets:"
+    print(message)
+    output.append(message)
 
-    return predictions
+    for pred in predictions[:10]:  # Show top 10 most complex
+        message = (f"• Ticket {pred['ticket_id']}: {pred['complexity_category']} "
+                   f"(score: {pred['complexity_score']:.1f}) - {pred['tags']}")
+        print(message)
+        output.append(message)
+
+    return '\n'.join(output)
 
 
 def generate_recommendations(learned_complexity, predictions):
     """Generate actionable recommendations based on learned data"""
+    output = []
     print(f"\n💡 AI RECOMMENDATIONS:")
+    output.append(f"\n💡 AI RECOMMENDATIONS:")
 
     if not learned_complexity:
-        print("❌ Need more data to generate recommendations")
-        return
+        message = "❌ Need more data to generate recommendations"
+        print(message)
+        output.append(message)
+        return '\n'.join(output)
 
     # Find problem areas
     complex_tags = [(tag, data) for tag, data in learned_complexity.items()
@@ -196,25 +229,33 @@ def generate_recommendations(learned_complexity, predictions):
 
     if complex_tags:
         print(f"\n🚨 HIGH-COMPLEXITY AREAS NEEDING ATTENTION:")
+        output.append(f"\n🚨 HIGH-COMPLEXITY AREAS NEEDING ATTENTION:")
         for tag, data in sorted(complex_tags, key=lambda x: x[1]['score'], reverse=True)[:3]:
-            print(f"• {tag}: {data['avg_time']:.1f}h average - Consider:")
+            message = f"• {tag}: {data['avg_time']:.1f}h average - Consider:"
+            print(message)
+            output.append(message)
 
             # Specific recommendations based on tag type
+            recommendations = []
             if tag in ['ssl', 'certificate', 'security']:
-                print("  - Create SSL troubleshooting checklist")
-                print("  - Provide security certification training")
+                recommendations = ["  - Create SSL troubleshooting checklist",
+                                   "  - Provide security certification training"]
             elif tag in ['dns', 'propagation', 'nameservers']:
-                print("  - Document DNS change procedures")
-                print("  - Create DNS diagnostic tools")
+                recommendations = ["  - Document DNS change procedures",
+                                   "  - Create DNS diagnostic tools"]
             elif tag in ['integration', 'api', 'webhook']:
-                print("  - Develop integration testing scripts")
-                print("  - Create API troubleshooting guide")
+                recommendations = ["  - Develop integration testing scripts",
+                                   "  - Create API troubleshooting guide"]
             elif tag in ['performance', 'slow', 'optimization']:
-                print("  - Invest in performance monitoring tools")
-                print("  - Create performance baseline documentation")
+                recommendations = ["  - Invest in performance monitoring tools",
+                                   "  - Create performance baseline documentation"]
             else:
-                print(f"  - Create detailed procedures for {tag} issues")
-                print(f"  - Consider specialist training for {tag}")
+                recommendations = [f"  - Create detailed procedures for {tag} issues",
+                                   f"  - Consider specialist training for {tag}"]
+
+            for rec in recommendations:
+                print(rec)
+                output.append(rec)
 
     # Staffing recommendations
     high_volume_complex = [(tag, data) for tag, data in learned_complexity.items()
@@ -222,14 +263,21 @@ def generate_recommendations(learned_complexity, predictions):
 
     if high_volume_complex:
         print(f"\n👥 STAFFING RECOMMENDATIONS:")
-        print("Consider assigning specialists for these high-volume complex areas:")
+        output.append(f"\n👥 STAFFING RECOMMENDATIONS:")
+        message = "Consider assigning specialists for these high-volume complex areas:"
+        print(message)
+        output.append(message)
         for tag, data in sorted(high_volume_complex, key=lambda x: x[1]['ticket_count'], reverse=True)[:3]:
-            print(f"• {tag}: {data['ticket_count']} tickets, {data['avg_time']:.1f}h avg")
+            message = f"• {tag}: {data['ticket_count']} tickets, {data['avg_time']:.1f}h avg"
+            print(message)
+            output.append(message)
+
+    return '\n'.join(output)
 
 
 def load_csv(path: Path) -> tuple[List[Dict[str, str]], Dict[str, int], Dict[str, int]]:
-    #Load CSV file and generate stats
-    #Return : tuple: (resolution_data, category_counts, tag_counts)
+    """Load CSV file and generate stats"""
+    """Return : tuple: (resolution_data, category_counts, tag_counts)"""
 
     if not path.exists() or not path.is_file():
         raise FileNotFoundError(f"File {path} not found")
@@ -255,16 +303,21 @@ def load_csv(path: Path) -> tuple[List[Dict[str, str]], Dict[str, int], Dict[str
                     for tag in individual_tags:
                         if tag:
                             tag_counts[tag] += 1
+
         if not resolution_data:
-            raise ValueError("<UNK> CSV file contains not data!")
+            raise ValueError("CSV file contains no data!")
 
         return resolution_data, category_counts, tag_counts
-
 
     except csv.Error as e:
         raise ValueError(f"CSV parsing error: {str(e)}")
     except Exception as e:
         raise ValueError(f"Error processing file: {str(e)}")
+
+
+def save_report(text, filename="analysis_report.txt"):
+    Path(filename).write_text(text, encoding="utf-8")
+    print(f"✅ Report saved to {filename}")
 
 
 # ==================================================
@@ -293,14 +346,26 @@ def main(csv_path: str):
         print("📊 BASIC TICKET SUMMARY")
         print("=" * 50)
 
+        # Collect basic summary for report
+        basic_summary = []
+        basic_summary.append("\n" + "=" * 50)
+        basic_summary.append("📊 BASIC TICKET SUMMARY")
+        basic_summary.append("=" * 50)
+
         print(f"\n📋 STATUS BREAKDOWN:")
+        basic_summary.append(f"\n📋 STATUS BREAKDOWN:")
         for status, count in sorted(category_counts.items(), key=lambda x: x[1], reverse=True):
-            print(f"• {status}: {count} tickets")
+            message = f"• {status}: {count} tickets"
+            print(message)
+            basic_summary.append(message)
 
         print(f"\n🏷️ TOP TAGS:")
+        basic_summary.append(f"\n🏷️ TOP TAGS:")
         sorted_tags = sorted(tag_counts.items(), key=lambda x: x[1], reverse=True)
         for tag, count in sorted_tags[:10]:  # Show top 10 tags
-            print(f"• {tag}: {count} tickets")
+            message = f"• {tag}: {count} tickets"
+            print(message)
+            basic_summary.append(message)
 
     except FileNotFoundError as e:
         print(f"❌ File error: {e}")
@@ -312,15 +377,26 @@ def main(csv_path: str):
         print(f"❌ Unexpected error: {e}")
         return
 
-
     # Step 4: Generate AI insights
     print("\n" + "=" * 50)
     print("🤖 AI ANALYSIS RESULTS")
     print("=" * 50)
 
-    generate_learned_insights(learned_complexity, resolution_data)
-    predictions = predict_open_tickets(resolution_data, learned_complexity)
-    generate_recommendations(learned_complexity, predictions)
+    # Generate all report sections
+    insights = generate_learned_insights(learned_complexity)
+    predictions_text = predict_open_tickets(resolution_data, learned_complexity)
+    recommendations = generate_recommendations(learned_complexity, [])  # Pass empty list for predictions
+
+    # Combine all parts for the report
+    report_parts = [
+        '\n'.join(basic_summary),
+        insights,
+        predictions_text,
+        recommendations
+    ]
+
+    full_report = "\n\n".join(report_parts)
+    save_report(full_report, "analysis_report.txt")
 
     print(f"\n✨ Analysis complete! The AI has learned from {len(resolution_data)} tickets.")
 
@@ -330,14 +406,13 @@ def main(csv_path: str):
 # ==================================================
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="<UNK> HelpDesk Analyzer")
+    parser = argparse.ArgumentParser(description="AI HelpDesk Analyzer")
     parser.add_argument("csv_path", help="Path to CSV file")
     parser.add_argument("-o", "--output", help="Optional output file path", default="analysis_report.txt")
     parser.add_argument("-v", "--verbose", help="Verbose output", action="store_true")
     args = parser.parse_args()
 
-    #csv_path = args.csv_path
     try:
         main(args.csv_path)
     except FileNotFoundError as e:
-        print(f"<UNK> {e}")
+        print(f"❌ {e}")
